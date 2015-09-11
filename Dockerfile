@@ -9,13 +9,13 @@ ENV DOMAIN_ID ""
 ENV TITLE ""
 ENV PLATFORMS android
 #amazon-fireos android blackberry10 browser firefoxos ubuntu webos
-ENV ANDROID_HOME=/android-sdk-linux
+ENV ANDROID_TARGET "android-21"
+ENV ANDROID_HOME /android-sdk-linux
 
+RUN apt-get -y install software-properties-common
+RUN apt-add-repository ppa:cordova-ubuntu/ppa
 RUN apt-get update
-RUN apt-get -y install npm click cmake libicu-dev pkg-config devscripts qtbase5-dev qtchooser qtdeclarative5-dev qtfeedback5-dev qtlocation5-dev qtmultimedia5-dev qtpim5-dev libqt5sensors5-dev qtsystems5-dev wget default-jdk expect
-RUN ln -s /usr/bin/nodejs /usr/bin/node
-RUN npm install node
-RUN npm install -g cordova
+RUN apt-get -y install npm click cmake libicu-dev pkg-config devscripts qtbase5-dev qtchooser qtdeclarative5-dev qtfeedback5-dev qtlocation5-dev qtmultimedia5-dev qtpim5-dev libqt5sensors5-dev qtsystems5-dev wget default-jdk expect libc6-i386 lib32stdc++6 lib32gcc1 lib32ncurses5 lib32z1 cordova-cli
 
 WORKDIR /tmp
 RUN wget -q $(wget -q -O- 'https://developer.android.com/sdk' | \
@@ -30,4 +30,7 @@ WORKDIR /cordova
 CMD cordova create "${PROJECTNAME}" "${DOMAIN_ID}" "${TITLE}" && \
     cd "${PROJECTNAME}" && \
     cordova platform add ${PLATFORMS} && \
+    if test -d platforms/android; then \
+      sed -i 's,target=.*,target='${ANDROID_TARGET}',g' platforms/android/project.properties; \
+    fi; \
     cordova build
