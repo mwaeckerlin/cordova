@@ -23,7 +23,8 @@ RUN wget -q $(wget -q -O- 'https://developer.android.com/sdk' | \
 WORKDIR /
 RUN tar xzf /tmp/android-sdk*linux*.tgz
 RUN rm /tmp/android-sdk*linux*.tgz
-RUN expect -c 'set timeout -1; spawn '${ANDROID_HOME}'/tools/android update sdk -u; expect { "Do you accept the license" { exp_send "y\r" ; exp_continue } eof }'
+RUN ( sleep 5 && while [ 1 ]; do sleep 1; echo "y"; done ) | ${ANDROID_HOME}/tools/android update sdk -u
+#RUN expect -c 'set timeout -1; spawn '${ANDROID_HOME}'/tools/android update sdk -u; expect { {[y/n]:} { exp_send "y\r" ; exp_continue } eof }'
 
 WORKDIR /cordova
 
