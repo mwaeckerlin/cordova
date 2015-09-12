@@ -1,11 +1,12 @@
 FROM ubuntu
 MAINTAINER mwaeckerlin
 
+VOLUME /output
 VOLUME /cordova
 VOLUME /project
 
-ENV PROJECTNAME ""
-ENV DOMAIN_ID ""
+ENV PROJECT ""
+ENV DOMAIN ""
 ENV TITLE ""
 ENV PLATFORMS android
 #amazon-fireos android blackberry10 browser firefoxos ubuntu webos
@@ -28,10 +29,15 @@ RUN ( sleep 5 && while [ 1 ]; do sleep 1; echo "y"; done ) | ${ANDROID_HOME}/too
 
 WORKDIR /cordova
 
-CMD cordova create "${PROJECTNAME}" "${DOMAIN_ID}" "${TITLE}" && \
-    cd "${PROJECTNAME}" && \
+CMD cordova create "${PROJECT}" "${DOMAIN}" "${TITLE}" && \
+    cd "${PROJECT}" && \
     cordova platform add ${PLATFORMS} && \
     if test -d platforms/android; then \
       sed -i 's,target=.*,target='${ANDROID_TARGET}',g' platforms/android/project.properties; \
-    fi; \
-    cordova build
+    fi && \
+    cordova build && \
+    mv platforms/android/build/outputs/apk/android-debug.apk /output/${PROJECT}.apk && \
+    echo "----> get the result with:" && \
+    echo "      docker cp $(hostname):/output ." && \
+    echo "and find the result in folder ./output" && \
+    sleep infinity
