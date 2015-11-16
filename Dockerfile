@@ -35,6 +35,13 @@ CMD cordova create "${PROJECT}" "${DOMAIN}" "${TITLE}" && \
     if test -d platforms/android; then \
       sed -i 's,target=.*,target='${ANDROID_TARGET}',g' platforms/android/project.properties; \
     fi && \
+    ( test -f config.xml.old || mv config.xml config.xml.old ) && \
+    xml2 < config.xml.old | \
+      sed 's,\(/widget/@id=\).*,\1${DOMAIN},;
+           s,\(/widget/access/@origin=\).*,\1'"${DOMAIN}"'\n/widget/access/@subdomains=true,;
+           s,\(/widget/content/@src=\).*,\1h'"${DOMAIN}"',' | \
+      2xml > config.xml && \
+      (echo '<!DOCTYPE html>'; html2 < www/index.html.old | sed '0,\,/html/body=,s%%&\n/html/body/script/@type=text/javascript\n/html/body/script=document.addEventListener("deviceready", onDeviceReady, false);function onDeviceReady() {window.location="'"${DOMAIN}"'";}%' | 2html ) > www/index.html
     cordova build && \
     mv platforms/android/build/outputs/apk/android-debug.apk /output/${PROJECT}.apk && \
     echo "----> get the result with:" && \
